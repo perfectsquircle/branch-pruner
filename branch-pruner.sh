@@ -4,25 +4,30 @@
 git checkout master
 git pull
 
-merged='--merged'
-# pattern='feature|release|bugfix'
 blacklist='HEAD|master|develop'
 
-branches=$(git branch -r $merged | sed s/origin\\/// | grep -v -E "$blacklist") # | grep -E "$pattern")
-branches_count=$(echo -n "$branches" | wc -l)
+branches=$(git branch -r --merged | sed s/origin\\/// | grep -v -E "$blacklist") # | grep -E "$pattern")
+branches_count=$(echo -n "$branches" | grep -c '^')
 
-echo Found $branches_count merged branches on remote.
-echo "$branches"
-
-read -p "Proceed with deletion? " -n 1 -r
-echo  
-if [[ $REPLY =~ ^[Yy]$ ]]
+if [ $branches_count -gt 0 ]
 then
-    # do dangerous stuff
-    git push origin --delete $branches
+    echo ---------------
+    echo "$branches"
+    echo ---------------
 fi
 
+echo Found $branches_count merged branches on remote.
 
+if [ $branches_count -gt 0 ]
+then
+    read -p "Proceed with deletion? " -n 1 -r
+    echo  
+    if [[ $REPLY =~ ^[Yy]$ ]]
+    then
+        # do dangerous stuff
+        git push origin --delete $branches
+    fi
+fi
 
 
 get_old_branches() {
@@ -41,15 +46,24 @@ get_old_branches() {
 }
 
 old_branches="$(get_old_branches | sed s/origin\\/// | grep -v -E "$blacklist")"
-branches_count=$(echo -n "$old_branches" | wc -l)
+old_branches_count=$(echo -n "$old_branches" | grep -c '^')
 
-echo Found $branches_count branches older than 6 months on remote.
-echo "$old_branches"
-
-read -p "Proceed with deletion? " -n 1 -r
-echo  
-if [[ $REPLY =~ ^[Yy]$ ]]
+if [ $old_branches_count -gt 0 ]
 then
-    # do dangerous stuff
-    git push origin --delete $old_branches
+    echo ---------------
+    echo "$old_branches"
+    echo ---------------
+fi
+
+echo Found $old_branches_count branches older than 6 months on remote.
+
+if [ $old_branches_count -gt 0 ]
+then
+    read -p "Proceed with deletion? " -n 1 -r
+    echo  
+    if [[ $REPLY =~ ^[Yy]$ ]]
+    then
+        # do dangerous stuff
+        git push origin --delete $old_branches
+    fi
 fi
