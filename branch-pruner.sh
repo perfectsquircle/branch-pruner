@@ -1,8 +1,8 @@
 #!/bin/bash
-# set -x
+set -e
 
-git checkout master
-git pull
+git checkout master > /dev/null
+git pull > /dev/null
 
 blacklist='HEAD|master|develop'
 
